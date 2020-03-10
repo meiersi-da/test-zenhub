@@ -1,0 +1,21 @@
+daml 1.2
+module User where
+
+template User with
+    username: Party
+    friends: [Party]
+  where
+    signatory username
+    observer friends
+
+    key username: Party
+    maintainer key
+
+    nonconsuming choice AddFriend: ContractId User with
+        friend: Party
+      controller username
+      do
+        assertMsg "You cannot add yourself as a friend" (friend /= username)
+        assertMsg "You cannot add a friend twice" (friend `notElem` friends)
+        archive self
+        create this with friends = friend :: friends
